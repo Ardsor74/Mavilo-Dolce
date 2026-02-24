@@ -560,6 +560,13 @@ function Gallery() {
 /* ── VIDEO SECTION ── */
 function VideoSection() {
   useReveal();
+  const videos = ['video1.mp4','video2.mp4','video3.mp4','video4.mp4','video5.mp4','video6.mp4'];
+  const [visible, setVisible] = useState(() => Array(6).fill(true));
+  const hideVideo = i => setVisible(v => { const n=[...v]; n[i]=false; return n; });
+  const anyVisible = visible.some(Boolean);
+
+  if(!anyVisible) return null;
+
   return (
     <section id="video" className="section-pad" style={{background:'#1A1A1A'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
@@ -570,23 +577,19 @@ function VideoSection() {
           </h2>
           <span className="reveal reveal-delay-2" style={{display:'block',width:38,height:1,background:'rgba(212,175,55,0.4)',margin:'0 auto'}}/>
         </div>
-        <div className="reveal" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,300px),1fr))',gap:'clamp(1rem,3vw,2rem)'}}>
-          {['video1.mp4','video2.mp4'].map((v,i) => (
-            <div key={i} style={{position:'relative',overflow:'hidden',background:'#111',aspectRatio:'9/16',maxHeight:'70vh'}}>
+        <div className="reveal" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(min(100%,280px),1fr))',gap:'clamp(0.8rem,2vw,1.5rem)'}}>
+          {videos.map((v,i) => (
+            <div key={i} style={{display: visible[i] ? 'block' : 'none', position:'relative',overflow:'hidden',background:'#111',aspectRatio:'9/16'}}>
               <video
                 src={v}
                 autoPlay muted loop playsInline
                 style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}
-                onError={e => { e.target.closest('div').style.display='none'; }}
+                onError={() => hideVideo(i)}
               />
-              {/* Gold border accent */}
               <div style={{position:'absolute',inset:0,border:'1px solid rgba(212,175,55,0.15)',pointerEvents:'none'}}/>
             </div>
           ))}
         </div>
-        <p className="reveal" style={{textAlign:'center',fontFamily:'Lato',fontSize:'0.72rem',color:'rgba(255,255,255,0.25)',letterSpacing:'0.12em',marginTop:'1.5rem'}}>
-          Carica <strong style={{color:'rgba(212,175,55,0.5)'}}>video1.mp4</strong> e <strong style={{color:'rgba(212,175,55,0.5)'}}>video2.mp4</strong> su GitHub per visualizzare i video
-        </p>
       </div>
     </section>
   );
