@@ -493,8 +493,8 @@ function Lightbox({ items, idx, onClose, onPrev, onNext }) {
       </button>
       {/* Image */}
       <div onClick={e=>e.stopPropagation()} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'1rem',padding:'0 3.5rem',maxWidth:'100%'}}>
-        <img key={idx} src={item.fb} alt={item.alt} className="lb-img"
-          onError={e=>{e.target.src=item.fb;}}/>
+        <img key={idx} src={item.src} alt={item.alt} className="lb-img"
+          onError={e=>{if(e.target.src!==item.fb){e.target.src=item.fb;}}}/>
         <div style={{fontFamily:'Playfair Display,serif',fontStyle:'italic',color:'rgba(255,255,255,0.4)',fontSize:'0.85rem',letterSpacing:'0.05em',textAlign:'center'}}>
           {item.alt} <span style={{color:'#D4AF37',marginLeft:8}}>— {idx+1}/{items.length}</span>
         </div>
@@ -531,10 +531,10 @@ function Gallery() {
         <div className="reveal masonry">
           {GALLERY.map((item,i) => (
             <div key={item.id} className="mason-item" onClick={() => setLb(i)}>
-              <img src={item.fb} alt={item.alt} className="mason-img"
+              <img src={item.src} alt={item.alt} className="mason-img"
                 style={{aspectRatio:item.tall?'3/4':'4/3'}}
                 loading="lazy"
-                onError={e=>{e.target.src=item.fb;}}/>
+                onError={e=>{if(e.target.src!==item.fb){e.target.src=item.fb;}}}/>
               <div className="mason-overlay">
                 <span className="mason-label">{item.alt}</span>
               </div>
