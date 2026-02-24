@@ -171,7 +171,8 @@
     /* — Calendar admin — */
     .cal-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:0.76rem; cursor:pointer; border-radius:3px; transition:all 0.18s; font-family:'Lato'; color:#bbb; min-height:34px; -webkit-tap-highlight-color:transparent; }
     .cal-day:hover:not(.cal-blocked):not(.cal-past) { background:rgba(212,175,55,0.18); color:#D4AF37; }
-    .cal-day.cal-blocked { background:rgba(212,175,55,0.14); color:#D4AF37; font-weight:700; border:1px solid rgba(212,175,55,0.38); }
+    .cal-day.cal-blocked { background:rgba(120,120,120,0.25); color:#888; font-weight:700; border:1px solid rgba(150,150,150,0.4); cursor:pointer; }
+    .cal-day.cal-blocked::after { content:' ✕'; font-size:0.55rem; }
     .cal-day.cal-today { border:1px solid #D4AF37; color:#D4AF37; }
     .cal-day.cal-past { opacity:0.22; cursor:default; pointer-events:none; }
 
@@ -220,17 +221,12 @@ const IG = 'https://www.instagram.com/anjalagomez/';
 const FB = 'https://www.facebook.com/anjalagomeznapoli/photos?locale=it_IT';
 const PASS = 'mavilo2026';
 
-const GALLERY = [
-  { id:1, src:'foto1.jpg', fb:'https://images.unsplash.com/photo-1519869325930-281384150729?w=800&q=85', tall:true },
-  { id:2, src:'foto2.jpg', fb:'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&q=85', tall:false },
-  { id:3, src:'foto3.jpg', fb:'https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=800&q=85', tall:true },
-  { id:4, src:'foto4.jpg', fb:'https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=800&q=85', tall:false },
-  { id:5, src:'foto5.jpg', fb:'https://images.unsplash.com/photo-1623428454614-abaf00244e52?w=800&q=85', tall:true },
-  { id:6, src:'foto6.jpg', fb:'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=800&q=85', tall:false },
-  { id:7, src:'foto7.jpg', fb:'https://images.unsplash.com/photo-1562777717-dc6984f65a63?w=800&q=85', tall:false },
-  { id:8, src:'foto8.jpg', fb:'https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=800&q=85', tall:true },
-  { id:9, src:'foto9.jpg', fb:'https://images.unsplash.com/photo-1557925923-cd4648e211a0?w=800&q=85', tall:false },
-];
+// Foto 1-20: se il file non esiste sul server, la card viene nascosta automaticamente
+const GALLERY = Array.from({length:20},(_,i)=>({
+  id: i+1,
+  src: `foto${i+1}.jpg`,
+  tall: [1,3,5,8,11,14,17,20].includes(i+1), // alternanza tall/normal
+}));
 
 /* ── Icons ── */
 const Ico = {
@@ -513,7 +509,14 @@ function Lightbox({ items, idx, onClose, onPrev, onNext }) {
 /* ── GALLERY ── */
 function Gallery() {
   const [lb, setLb] = useState(null);
+  // visible[i] = true finché l'immagine carica, false se 404
+  const [visible, setVisible] = useState(() => Array(20).fill(true));
   useReveal();
+
+  const hideItem = (i) => setVisible(v => { const n=[...v]; n[i]=false; return n; });
+  // Solo le foto che si sono caricate con successo entrano nel lightbox
+  const lbItems = GALLERY.filter((_,i) => visible[i]);
+
   return (
     <section id="gallery" className="section-pad" style={{background:'#FFF'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
@@ -527,21 +530,64 @@ function Gallery() {
         </div>
         <div className="reveal masonry">
           {GALLERY.map((item,i) => (
-            <div key={item.id} className="mason-item" onClick={() => setLb(i)}>
-              <img src={item.src} alt={item.alt} className="mason-img"
+            <div key={item.id} className="mason-item"
+              style={{display: visible[i] ? 'block' : 'none'}}
+              onClick={() => {
+                const lbIdx = lbItems.findIndex(x=>x.id===item.id);
+                if(lbIdx >= 0) setLb(lbIdx);
+              }}>
+              <img
+                src={item.src}
+                alt={`MAVILO DOLCE creazione ${item.id}`}
+                className="mason-img"
                 style={{aspectRatio:item.tall?'3/4':'4/3'}}
                 loading="lazy"
-                onError={e=>{if(e.target.src!==item.fb){e.target.src=item.fb;}}}/>
+                onError={() => hideItem(i)}/>
               <div className="mason-overlay"/>
             </div>
           ))}
         </div>
       </div>
-      {lb !== null && (
-        <Lightbox items={GALLERY} idx={lb} onClose={() => setLb(null)}
-          onPrev={() => setLb(i => (i-1+GALLERY.length)%GALLERY.length)}
-          onNext={() => setLb(i => (i+1)%GALLERY.length)}/>
+      {lb !== null && lbItems.length > 0 && (
+        <Lightbox items={lbItems} idx={lb} onClose={() => setLb(null)}
+          onPrev={() => setLb(i => (i-1+lbItems.length)%lbItems.length)}
+          onNext={() => setLb(i => (i+1)%lbItems.length)}/>
       )}
+    </section>
+  );
+}
+
+/* ── VIDEO SECTION ── */
+function VideoSection() {
+  useReveal();
+  return (
+    <section id="video" className="section-pad" style={{background:'#1A1A1A'}}>
+      <div style={{maxWidth:1200,margin:'0 auto'}}>
+        <div style={{textAlign:'center',marginBottom:'clamp(2.5rem,6vw,4rem)'}}>
+          <div className="reveal section-label" style={{color:'rgba(212,175,55,0.8)'}}>L'Arte in Movimento</div>
+          <h2 className="reveal reveal-delay-1 section-title" style={{color:'#fff'}}>
+            Guardaci <em style={{color:'#D4AF37'}}>al lavoro</em>
+          </h2>
+          <span className="reveal reveal-delay-2" style={{display:'block',width:38,height:1,background:'rgba(212,175,55,0.4)',margin:'0 auto'}}/>
+        </div>
+        <div className="reveal" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,300px),1fr))',gap:'clamp(1rem,3vw,2rem)'}}>
+          {['video1.mp4','video2.mp4'].map((v,i) => (
+            <div key={i} style={{position:'relative',overflow:'hidden',background:'#111',aspectRatio:'9/16',maxHeight:'70vh'}}>
+              <video
+                src={v}
+                autoPlay muted loop playsInline
+                style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}
+                onError={e => { e.target.closest('div').style.display='none'; }}
+              />
+              {/* Gold border accent */}
+              <div style={{position:'absolute',inset:0,border:'1px solid rgba(212,175,55,0.15)',pointerEvents:'none'}}/>
+            </div>
+          ))}
+        </div>
+        <p className="reveal" style={{textAlign:'center',fontFamily:'Lato',fontSize:'0.72rem',color:'rgba(255,255,255,0.25)',letterSpacing:'0.12em',marginTop:'1.5rem'}}>
+          Carica <strong style={{color:'rgba(212,175,55,0.5)'}}>video1.mp4</strong> e <strong style={{color:'rgba(212,175,55,0.5)'}}>video2.mp4</strong> su GitHub per visualizzare i video
+        </p>
+      </div>
     </section>
   );
 }
@@ -660,9 +706,13 @@ function Preventivo({ blocked }) {
                   <input type="date" className="f-input" value={form.data} min={today}
                     onChange={e => setForm(f=>({...f,data:e.target.value}))}/>
                   {form.data && isBlocked(form.data) && (
-                    <p style={{color:'#C0392B',fontFamily:'Lato',fontSize:'0.76rem',marginTop:'0.5rem',letterSpacing:'0.04em'}}>
-                      ✦ Questa data non è disponibile. Scegline un'altra.
-                    </p>
+                    <div style={{marginTop:'0.6rem',padding:'0.75rem 1rem',background:'rgba(192,57,43,0.07)',border:'1px solid rgba(192,57,43,0.25)',display:'flex',alignItems:'center',gap:'0.6rem'}}>
+                      <span style={{fontSize:'1rem'}}>🔒</span>
+                      <p style={{color:'#C0392B',fontFamily:'Lato',fontSize:'0.8rem',letterSpacing:'0.02em',lineHeight:1.5,margin:0}}>
+                        <strong>Spiacenti</strong>, per questa data l'Atelier è al completo.<br/>
+                        <span style={{color:'#999',fontSize:'0.74rem'}}>Scegli un'altra data per la tua commissione.</span>
+                      </p>
+                    </div>
                   )}
                   {form.data && !isBlocked(form.data) && new Date(form.data+'T12:00:00') > new Date() && (
                     <p style={{color:'#2ecc71',fontFamily:'Lato',fontSize:'0.74rem',marginTop:'0.5rem',letterSpacing:'0.04em'}}>
@@ -805,9 +855,9 @@ function AdminCalendar({ blocked, setBlocked }) {
         })}
       </div>
       <div style={{marginTop:'1rem',display:'flex',gap:'1.2rem',flexWrap:'wrap',fontFamily:'Lato',fontSize:'0.67rem',letterSpacing:'0.06em',color:'#555'}}>
-        <span><span style={{display:'inline-block',width:11,height:11,border:'1px solid rgba(212,175,55,0.4)',background:'rgba(212,175,55,0.14)',marginRight:5,verticalAlign:'middle'}}/>Bloccata</span>
+        <span><span style={{display:'inline-block',width:11,height:11,border:'1px solid rgba(150,150,150,0.4)',background:'rgba(120,120,120,0.25)',marginRight:5,verticalAlign:'middle'}}/>Occupata (Sold Out)</span>
         <span><span style={{display:'inline-block',width:11,height:11,border:'1px solid #D4AF37',marginRight:5,verticalAlign:'middle'}}/>Oggi</span>
-        <span style={{color:'rgba(255,255,255,0.25)'}}>Tocca per bloccare/sbloccare</span>
+        <span style={{color:'rgba(255,255,255,0.25)'}}>Tocca per occupare/liberare</span>
       </div>
     </div>
   );
@@ -849,12 +899,12 @@ function AdminDash({ onClose, blocked, setBlocked }) {
           <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(212,175,55,0.15)',padding:'clamp(1.2rem,4vw,2rem)'}}>
             <div style={{fontFamily:'Lato',fontSize:'0.66rem',letterSpacing:'0.22em',textTransform:'uppercase',color:'#D4AF37',marginBottom:'0.8rem'}}>Disponibilità Calendario</div>
             <p style={{fontFamily:'Lato',fontSize:'0.79rem',color:'#555',lineHeight:1.8,marginBottom:'1.4rem'}}>
-              Tocca una data per <strong style={{color:'rgba(212,175,55,0.8)'}}>bloccarla</strong>. Sarà non prenotabile nel form clienti. Tocca di nuovo per sbloccarla.
+              Tocca una data per segnarla come <strong style={{color:'#aaa'}}>Occupata / Sold Out</strong>. I clienti vedranno un messaggio di indisponibilità e non potranno selezionarla. Le date rimangono salvate anche dopo aver chiuso il browser. Tocca di nuovo per liberarla.
             </p>
             <AdminCalendar blocked={blocked} setBlocked={setBlocked}/>
             {blocked.length > 0 && (
               <div style={{marginTop:'1.5rem'}}>
-                <div style={{fontFamily:'Lato',fontSize:'0.6rem',letterSpacing:'0.2em',textTransform:'uppercase',color:'#555',marginBottom:'0.7rem'}}>Date bloccate ({blocked.length})</div>
+                <div style={{fontFamily:'Lato',fontSize:'0.6rem',letterSpacing:'0.2em',textTransform:'uppercase',color:'#888',marginBottom:'0.7rem'}}>Date occupate ({blocked.length})</div>
                 <div style={{display:'flex',flexWrap:'wrap',gap:'0.45rem'}}>
                   {[...blocked].sort().map(d => (
                     <span key={d} style={{fontFamily:'Lato',fontSize:'0.7rem',color:'#D4AF37',border:'1px solid rgba(212,175,55,0.25)',padding:'0.28rem 0.7rem',display:'inline-flex',alignItems:'center',gap:8}}>
@@ -946,14 +996,38 @@ function AdminLogin({ onOk, onClose }) {
 /* ── FOOTER ── */
 function Footer({ onAdmin }) {
   const yr = new Date().getFullYear();
-  const socials = [[IG,'Instagram',<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>],[FB,'Facebook',<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>],[`https://wa.me/${WA}`,'WhatsApp',<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>]];
+  const clickCount = useRef(0);
+  const clickTimer = useRef(null);
+
+  const handleLogoClick = () => {
+    clickCount.current += 1;
+    if(clickTimer.current) clearTimeout(clickTimer.current);
+    if(clickCount.current >= 3) {
+      clickCount.current = 0;
+      onAdmin();
+    } else {
+      clickTimer.current = setTimeout(() => { clickCount.current = 0; }, 800);
+    }
+  };
+
+  const socials = [
+    [IG,'Instagram',<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>],
+    [FB,'Facebook',<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>],
+    [`https://wa.me/${WA}`,'WhatsApp',<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>]
+  ];
+
   return (
     <footer style={{background:'#111',color:'#fff',padding:'clamp(4rem,10vw,7rem) clamp(1.25rem,5vw,2.5rem) clamp(2rem,5vw,3rem)'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:'clamp(3rem,7vw,5rem)'}}>
-          <div style={{fontFamily:'Playfair Display,serif',fontSize:'clamp(2rem,7vw,4.5rem)',fontWeight:400,letterSpacing:'0.1em',color:'#fff',marginBottom:'0.3rem'}}>
+
+          {/* Logo — 3 click segreti per aprire admin */}
+          <div
+            onClick={handleLogoClick}
+            style={{fontFamily:'Playfair Display,serif',fontSize:'clamp(2rem,7vw,4.5rem)',fontWeight:400,letterSpacing:'0.1em',color:'#fff',marginBottom:'0.3rem',cursor:'default',userSelect:'none',WebkitUserSelect:'none'}}>
             MAVILO<span style={{color:'#D4AF37'}}>.</span>
           </div>
+
           <div style={{fontFamily:'Playfair Display',fontStyle:'italic',color:'rgba(255,255,255,0.28)',fontSize:'clamp(0.85rem,1.8vw,1rem)',marginBottom:'2.5rem',letterSpacing:'0.05em'}}>
             Sugar Art & Couture Cakes
           </div>
@@ -969,16 +1043,10 @@ function Footer({ onAdmin }) {
           </div>
           <div style={{width:38,height:1,background:'rgba(212,175,55,0.22)',margin:'0 auto'}}/>
         </div>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'1rem'}}>
-          <p style={{fontFamily:'Lato',fontSize:'0.68rem',color:'rgba(255,255,255,0.18)',letterSpacing:'0.1em'}}>
+        <div style={{display:'flex',justifyContent:'center',alignItems:'center'}}>
+          <p style={{fontFamily:'Lato',fontSize:'0.68rem',color:'rgba(255,255,255,0.18)',letterSpacing:'0.1em',textAlign:'center'}}>
             © {yr} MAVILO DOLCE — Tutti i diritti riservati
           </p>
-          <button onClick={onAdmin}
-            style={{fontFamily:'Lato',fontSize:'0.57rem',letterSpacing:'0.22em',textTransform:'uppercase',background:'none',color:'rgba(255,255,255,0.07)',border:'none',cursor:'pointer',padding:'0.3rem',transition:'color 0.3s',minHeight:36,minWidth:44}}
-            onMouseEnter={e=>e.target.style.color='rgba(212,175,55,0.35)'}
-            onMouseLeave={e=>e.target.style.color='rgba(255,255,255,0.07)'}>
-            ✦ Gestione
-          </button>
         </div>
       </div>
     </footer>
@@ -1019,6 +1087,7 @@ function App() {
       <Numbers/>
       <Atelier/>
       <Gallery/>
+      <VideoSection/>
       <Testimonial/>
       <Preventivo blocked={blocked}/>
       <Footer onAdmin={() => setAdmin('login')}/>
