@@ -221,15 +221,15 @@ const FB = 'https://www.facebook.com/anjala.gomez/?locale=it_IT';
 const PASS = 'mavilo2026';
 
 const GALLERY = [
-  { id:1, alt:'Torta Couture Primavera',    src:'foto1.jpg',   fb:'https://images.unsplash.com/photo-1558636508-e0969251be4b?w=800&q=85', tall:true },
-  { id:2, alt:'Fiori di Zucchero Rosa',     src:'foto2.jpg',   fb:'https://images.unsplash.com/photo-1587668178277-295251f900ce?w=800&q=85', tall:false },
-  { id:3, alt:'Wedding Cake Minimalista',   src:'foto3.jpg',   fb:'https://images.unsplash.com/photo-1616690710400-a16d146927c5?w=800&q=85', tall:true },
-  { id:4, alt:'Peonie Pasta di Zucchero',   src:'foto4.jpg',   fb:'https://images.unsplash.com/photo-1562440499-64c9a111f713?w=800&q=85', tall:false },
-  { id:5, alt:'Torta Nuziale Tre Piani',    src:'foto5.jpg',   fb:'https://images.unsplash.com/photo-1524351199678-941a58a3df50?w=800&q=85', tall:true },
-  { id:6, alt:'Sweet Table Dorato',         src:'foto6.jpg',   fb:'https://images.unsplash.com/photo-1486427944299-d1955d23e34d?w=800&q=85', tall:false },
-  { id:7, alt:'Rose Scultura Zucchero',     src:'foto7.jpg',   fb:'https://images.unsplash.com/photo-1621303837174-89787a7d4729?w=800&q=85', tall:false },
-  { id:8, alt:'Torta Compleanno Luxury',    src:'foto8.jpg',   fb:'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&q=85', tall:true },
-  { id:9, alt:'Dettaglio Fiore Artigianale',src:'foto9.jpg',   fb:'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&q=85', tall:false },
+  { id:1, src:'foto1.jpg', fb:'https://images.unsplash.com/photo-1519869325930-281384150729?w=800&q=85', tall:true },
+  { id:2, src:'foto2.jpg', fb:'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&q=85', tall:false },
+  { id:3, src:'foto3.jpg', fb:'https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=800&q=85', tall:true },
+  { id:4, src:'foto4.jpg', fb:'https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=800&q=85', tall:false },
+  { id:5, src:'foto5.jpg', fb:'https://images.unsplash.com/photo-1623428454614-abaf00244e52?w=800&q=85', tall:true },
+  { id:6, src:'foto6.jpg', fb:'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=800&q=85', tall:false },
+  { id:7, src:'foto7.jpg', fb:'https://images.unsplash.com/photo-1562777717-dc6984f65a63?w=800&q=85', tall:false },
+  { id:8, src:'foto8.jpg', fb:'https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=800&q=85', tall:true },
+  { id:9, src:'foto9.jpg', fb:'https://images.unsplash.com/photo-1557925923-cd4648e211a0?w=800&q=85', tall:false },
 ];
 
 /* ── Icons ── */
@@ -493,12 +493,9 @@ function Lightbox({ items, idx, onClose, onPrev, onNext }) {
       </button>
       {/* Image */}
       <div onClick={e=>e.stopPropagation()} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'1rem',padding:'0 3.5rem',maxWidth:'100%'}}>
-        <img key={idx} src={item.src} alt={item.alt} className="lb-img"
+        <img key={idx} src={item.src} alt="MAVILO DOLCE" className="lb-img"
           onError={e=>{if(e.target.src!==item.fb){e.target.src=item.fb;}}}/>
-        <div style={{fontFamily:'Playfair Display,serif',fontStyle:'italic',color:'rgba(255,255,255,0.4)',fontSize:'0.85rem',letterSpacing:'0.05em',textAlign:'center'}}>
-          {item.alt} <span style={{color:'#D4AF37',marginLeft:8}}>— {idx+1}/{items.length}</span>
-        </div>
-        <div style={{display:'flex',gap:6,marginTop:'0.3rem'}}>
+        <div style={{display:'flex',gap:6,marginTop:'0.8rem'}}>
           {items.map((_,i)=>(
             <div key={i} style={{width:i===idx?24:6,height:1,background:i===idx?'#D4AF37':'rgba(255,255,255,0.2)',transition:'all 0.3s'}}/>
           ))}
@@ -535,9 +532,7 @@ function Gallery() {
                 style={{aspectRatio:item.tall?'3/4':'4/3'}}
                 loading="lazy"
                 onError={e=>{if(e.target.src!==item.fb){e.target.src=item.fb;}}}/>
-              <div className="mason-overlay">
-                <span className="mason-label">{item.alt}</span>
-              </div>
+              <div className="mason-overlay"/>
             </div>
           ))}
         </div>
